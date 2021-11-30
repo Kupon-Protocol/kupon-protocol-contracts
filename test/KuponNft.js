@@ -2,28 +2,36 @@ const { expect } = require("chai");
 
 describe("KuponNft contract", function () {
   let contract;
-  let owner;
+  let issuer;
 
   beforeEach(async function () {
-    [owner] = await ethers.getSigners();
+    [issuer] = await ethers.getSigners();
 
     const KuponNft = await ethers.getContractFactory("KuponNft");
 
-    contract = await KuponNft.deploy();
+    contract = await KuponNft.deploy(
+      "30-min video chat",
+      "30MIN",
+      10
+    );
   });
 
-  it("checks the initial counter value after constructor is run", async function () {
-    const counter = await contract.getCounter();
+  it("checks the NFT name", async function () {
+    const name = await contract.name();
 
-    expect(counter).to.equal(1);
+    expect(name).to.equal("30-min video chat");
   });
 
-  it("calls increase() and increases the counter to 2", async function () {
-    await contract.increase();
+  it("checks the NFT symbol", async function () {
+    const symbol = await contract.symbol();
 
-    const counter = await contract.getCounter();
+    expect(symbol).to.equal("30MIN");
+  });
 
-    expect(counter).to.equal(2);
+  it("checks the NFT max supply", async function () {
+    const maxSupply = await contract.maxSupply();
+
+    expect(maxSupply).to.equal(10);
   });
 
 });
