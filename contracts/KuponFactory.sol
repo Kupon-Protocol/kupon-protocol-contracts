@@ -7,18 +7,32 @@ pragma solidity ^0.8.4;
 // A bare-minimum proof-of-concept
 contract KuponFactory {
 
-  // VARIABLES
-  mapping (address => address) public issuers; // NFT address => issuer address
+  // VARIABLES & DATA STRUCTURES
   address[] public nftAddresses; // an array of all NFTs created through this factory
+
+  mapping (address => mapping (uint256 => address)) issuers; // issuer => array of NFT contract addresses
+  mapping (address => uint256) nftCounter; // the amount of NFT contracts that an issuer has created
 
   // READ METHODS
   function getNftAddressByIndex(uint256 _index) public view returns (address) {
     return nftAddresses[_index];
   }
 
-  // TODO: consider if this issuers mapping is really needed
-  function getNftIssuer(address _nftAddress) public view returns (address) {
-    return issuers[_nftAddress];
+  function nftOfIssuerByIndex(address _issuerAddress, uint256 index) public view virtual returns (address) {
+    require(index < nftCounter[_issuerAddress], "NFTs by issuer: issuer index out of bounds");
+    return issuers[_issuerAddress][index];
+  }
+
+  function getNftsByIssuer(address _issuerAddress) public view returns (address[] memory) {
+    uint256 nftCount = nftCounter[_issuerAddress];
+
+    address[] memory issuerNfts = new address[](nftCount);
+
+    for (uint256 i = 0; i < nftCount; i++) {
+        issuerNfts[i] = nftOfIssuerByIndex(_issuerAddress, i);
+    }
+
+    return issuerNfts;
   }
 
   // WRITE METHODS
@@ -30,13 +44,17 @@ contract KuponFactory {
   ) public returns (address) {
 
     // create a new ERC-721 contract
-    KuponNft nft = new KuponNft(_name, _symbol, _maxSupply, _price);
+    KuponNft nft = new KuponNft(_name, _symbol, _maxSupply, _price, msg.sender);
 
     // store the address into the NFT addresses array
     nftAddresses.push(address(nft));
 
     // map the NFT address with the issuer's address
-    issuers[address(nft)] = msg.sender;
+    uint256 nftCount = nftCounter[msg.sender];
+    issuers[msg.sender][nftCount] = address(nft);
+
+    // increase the NFT counter for the issuer
+    nftCounter[msg.sender] += 1;
 
     return address(nft);
   }

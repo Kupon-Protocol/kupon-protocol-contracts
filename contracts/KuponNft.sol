@@ -16,10 +16,12 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable {
     string memory _name, 
     string memory _symbol, 
     uint256 _maxSupply,
-    uint256 _price
+    uint256 _price,
+    address _issuer
   ) ERC721(_name, _symbol) {
     maxSupply = _maxSupply;
     price = _price;
+    transferOwnership(_issuer);
   }
 
   function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override(ERC721, ERC721Enumerable) {

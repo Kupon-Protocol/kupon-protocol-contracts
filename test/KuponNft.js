@@ -18,7 +18,8 @@ describe("KuponNft contract", function () {
       nftName, // name
       nftSymbol, // symbol
       nftSupply, // supply
-      nftPriceWei // price in wei
+      nftPriceWei, // price in wei
+      issuer.address
     );
   });
 
