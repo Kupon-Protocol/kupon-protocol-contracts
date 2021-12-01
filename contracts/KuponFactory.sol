@@ -18,7 +18,7 @@ contract KuponFactory {
     return nftAddresses[_index];
   }
 
-  function nftOfIssuerByIndex(address _issuerAddress, uint256 index) public view virtual returns (address) {
+  function nftOfIssuerByIndex(address _issuerAddress, uint256 index) public view returns (address) {
     require(index < nftCounter[_issuerAddress], "NFTs by issuer: issuer index out of bounds");
     return issuers[_issuerAddress][index];
   }

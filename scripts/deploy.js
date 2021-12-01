@@ -1,4 +1,4 @@
-const contractName1 = "KuponNft";
+const contractName1 = "KuponFactory";
 
 async function main() {
   const [deployer] = await ethers.getSigners();
