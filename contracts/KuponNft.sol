@@ -10,7 +10,7 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable {
   uint256 public maxSupply;
   uint256 public price;
 
-  mapping (uint256 => bool) used; // if token ID is set to true, it means it has been used already
+  mapping (uint256 => address) public used; // token ID => address that burned the token (the last holder)
 
   constructor(
     string memory _name, 
