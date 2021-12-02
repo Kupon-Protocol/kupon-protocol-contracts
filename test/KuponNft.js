@@ -98,4 +98,19 @@ describe("KuponNft contract", function () {
     expect(ownerBalanceBefore).to.be.lt(ownerBalanceAfter); // lt instead of lessThan for BigNumber
   });
 
+  it("holder claims a token and issuer marks it complete", async function () {
+    // mint token
+    await contract.mint(issuer.address, {
+      value: nftPriceWei
+    });
+
+    const minted = await contract.totalMinted();
+    expect(minted).to.equal(1);
+
+    // holder makes a claim for the service/product
+    await expect(contract.claim(0)).to.emit(contract, "Claim").withArgs(issuer.address, 0); // token with ID 0
+
+    // TODO: the issuer marks the claim as complete
+  });
+
 });

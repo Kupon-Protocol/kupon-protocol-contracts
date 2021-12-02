@@ -4,19 +4,29 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract KuponNft is ERC721, Ownable, ERC721Enumerable {
+contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
   using Counters for Counters.Counter;
 
   Counters.Counter private _tokenIdTracker;
   uint256 public maxSupply;
   uint256 public price;
 
-  mapping (uint256 => address) public used; // token ID => address that burned the token (the last holder)
-  uint256[] usedIds; // an array of token IDs that have been used/burned
+  // claims are initiated by NFT holders
+  mapping (uint256 => address) public claims; // token ID => address that burned the token (the last holder)
+  uint256[] claimedIds; // an array of token IDs that have been claimed
 
+  // completions are made by the NFT issuer (values move from "claims" to "completed" when service is completed)
+  mapping (uint256 => address) public completed; // token ID => address that burned the token (the last holder)
+  uint256[] completedIds; // an array of token IDs that have been completed
+
+  // EVENTS
+  event Claim(address indexed owner, uint256 indexed tokenId); // token owner & token ID
+
+  // CONSTRUCTOR
   constructor(
     string memory _name, 
     string memory _symbol, 
@@ -31,9 +41,9 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable {
 
   // READ METHODS
 
-  // get the last owner of a "used"/burned NFT
-  function getUsedNftLastOwner(uint256 _tokenId) public view returns (address) {
-    return used[_tokenId];
+  // get the last owner of a claimed NFT
+  function getClaimedNftLastOwner(uint256 _tokenId) public view returns (address) {
+    return claims[_tokenId];
   }
 
   function totalMinted() public view returns (uint256) {
@@ -42,7 +52,6 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable {
 
   // WRITE METHODS
 
-  // mint
   function mint(address _to) public payable {
     uint256 idTracker = _tokenIdTracker.current();
 
@@ -53,11 +62,21 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable {
     _safeMint(_to, idTracker);
   }
 
-  // burn
-    // store the ID into array of burned tokens
-    // store the last holder address into the "used" mapping
+  function claim(uint256 _tokenId) public {
+    address tokenOwner = ownerOf(_tokenId);
+
+    burn(_tokenId); // this function checks if msg.sender has rights to burn this token
+
+    claims[_tokenId] = tokenOwner;
+    claimedIds.push(_tokenId);
+
+    emit Claim(tokenOwner, _tokenId);
+  }
 
   // OWNER METHODS
+
+  //TODO: function markCompleted(uint256 _tokenId) public onlyOwner {}
+
   function withdraw() public payable onlyOwner {
     withdrawTo(msg.sender);
   }
