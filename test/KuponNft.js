@@ -110,7 +110,23 @@ describe("KuponNft contract", function () {
     // holder makes a claim for the service/product
     await expect(contract.claim(0)).to.emit(contract, "Claim").withArgs(issuer.address, 0); // token with ID 0
 
+    // check claimed NFT last owner
+    const lastOwner = await contract.getClaimedNftLastOwner(0); // token ID 0
+    expect(lastOwner).to.equal(issuer.address);
+
+    const lastOwner2 = await contract.getClaimedNftLastOwner(1); // token ID 1 (hasn't been minted nor claimed yet)
+    expect(lastOwner2).to.equal(ethers.constants.AddressZero);
+
     // TODO: the issuer marks the claim as complete
+    await expect(contract.markCompleted(0)).to.emit(contract, "Completed").withArgs(0); // token with ID 0
+
+    // token ID 0 has been marked completed, so the CLAIMS address should be 0x0 now
+    const lastOwner3 = await contract.getClaimedNftLastOwner(0);
+    expect(lastOwner3).to.equal(ethers.constants.AddressZero);
+
+    // token ID 0 has been marked completed, so the COMPLETED address should be the last holder's address now
+    const lastOwner4 = await contract.getCompletedNftLastOwner(0);
+    expect(lastOwner4).to.equal(issuer.address);
   });
 
 });

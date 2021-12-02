@@ -17,14 +17,13 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
 
   // claims are initiated by NFT holders
   mapping (uint256 => address) public claims; // token ID => address that burned the token (the last holder)
-  uint256[] claimedIds; // an array of token IDs that have been claimed
 
   // completions are made by the NFT issuer (values move from "claims" to "completed" when service is completed)
   mapping (uint256 => address) public completed; // token ID => address that burned the token (the last holder)
-  uint256[] completedIds; // an array of token IDs that have been completed
 
   // EVENTS
   event Claim(address indexed owner, uint256 indexed tokenId); // token owner & token ID
+  event Completed(uint256 indexed tokenId);
 
   // CONSTRUCTOR
   constructor(
@@ -46,6 +45,10 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
     return claims[_tokenId];
   }
 
+  function getCompletedNftLastOwner(uint256 _tokenId) public view returns (address) {
+    return completed[_tokenId];
+  }
+
   function totalMinted() public view returns (uint256) {
     return _tokenIdTracker.current();
   }
@@ -62,20 +65,32 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
     _safeMint(_to, idTracker);
   }
 
+  // Claim means that the NFT holder requests a service/product from the issuer by burning the NFT
   function claim(uint256 _tokenId) public {
     address tokenOwner = ownerOf(_tokenId);
 
     burn(_tokenId); // this function checks if msg.sender has rights to burn this token
 
     claims[_tokenId] = tokenOwner;
-    claimedIds.push(_tokenId);
 
     emit Claim(tokenOwner, _tokenId);
   }
 
   // OWNER METHODS
 
-  //TODO: function markCompleted(uint256 _tokenId) public onlyOwner {}
+  // After the service/product has been provided, issuer can mark the claim as completed
+  function markCompleted(uint256 _tokenId) public onlyOwner {
+    require(!_exists(_tokenId), "The NFT has not been claimed/burned yet.");
+    require(getClaimedNftLastOwner(_tokenId) != address(0), "The NFT has either been completed already or has not been minted yet.");
+
+    address lastOwner = getClaimedNftLastOwner(_tokenId);
+
+    // move the last owner address from claims to completed mapping
+    claims[_tokenId] = address(0);
+    completed[_tokenId] = lastOwner;
+
+    emit Completed(_tokenId);
+  }
 
   function withdraw() public payable onlyOwner {
     withdrawTo(msg.sender);
