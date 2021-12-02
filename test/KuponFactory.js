@@ -48,4 +48,19 @@ describe("KuponFactory contract", function () {
     expect(nftsOfIssuer).to.have.members([nftAddress]);
   });
 
+  it("checks for invalid params", async function () {
+    const nftName = "Invalid NFT";
+    const nftSymbol = "INV";
+    const nftSupply = 0;
+    const nftPriceWei = ethers.utils.parseUnits("0.1", "ether");
+
+    // attempt to create NFT contract
+    expect(factoryContract.createKuponNft(
+      nftName,
+      nftSymbol,
+      nftSupply,
+      nftPriceWei
+    )).to.be.revertedWith("Supply cannot be zero");
+  });
+
 });
