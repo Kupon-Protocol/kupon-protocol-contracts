@@ -48,7 +48,49 @@ describe("KuponFactory contract", function () {
     expect(nftsOfIssuer).to.have.members([nftAddress]);
   });
 
-  it("checks for invalid params", async function () {
+  it("creates multiple ERC-721 token instances", async function () {
+    const instances = [
+      {
+        "name": "Name1",
+        "symbol": "Symbol1",
+        "supply": 10,
+        "price": ethers.utils.parseUnits("0.1", "ether")
+      },
+      {
+        "name": "Name2",
+        "symbol": "Symbol2",
+        "supply": 50,
+        "price": ethers.utils.parseUnits("0.1", "ether")
+      },
+      {
+        "name": "Name3",
+        "symbol": "Symbol3",
+        "supply": 100,
+        "price": ethers.utils.parseUnits("0.1", "ether")
+      },
+      {
+        "name": "Name4",
+        "symbol": "Symbol4",
+        "supply": 150,
+        "price": ethers.utils.parseUnits("0.1", "ether")
+      }
+    ];
+
+    instances.forEach(async instance => {
+      await factoryContract.createKuponNft(
+        instance.name,
+        instance.symbol,
+        instance.supply,
+        instance.price
+      )}); 
+
+    // verify instances and ERC-721 count
+    const issuerNfts = await factoryContract.getNftsByIssuer(issuer.address);
+    expect(issuerNfts).to.have.lengthOf(instances.length);
+
+  });
+
+  it("does not allow a token with no supply", async function () {
     const nftName = "Invalid NFT";
     const nftSymbol = "INV";
     const nftSupply = 0;
@@ -60,7 +102,8 @@ describe("KuponFactory contract", function () {
       nftSymbol,
       nftSupply,
       nftPriceWei
-    )).to.be.revertedWith("Supply cannot be zero");
+    )).to.be.revertedWith("Owner cannot deploy zero supply tokens");
+    
   });
 
 });
