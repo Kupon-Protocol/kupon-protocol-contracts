@@ -14,6 +14,8 @@ describe("KuponFactory contract", function () {
   it("creates a new ERC-721 NFT", async function () {
     const nftName = "30-min video chat";
     const nftSymbol = "30MIN";
+    const nftDescription = "This NFT gives you the right to claim a 30 minute video call with the issuer.";
+    const nftImage = "https://i.insider.com/602ee9ced3ad27001837f2ac";
     const nftSupply = 10;
     const nftPriceWei = ethers.utils.parseUnits("0.1", "ether"); // 0.1 ETH or MATIC
 
@@ -21,6 +23,8 @@ describe("KuponFactory contract", function () {
     await factoryContract.createKuponNft(
      nftName,
      nftSymbol,
+     nftDescription,
+     nftImage,
      nftSupply,
      nftPriceWei
     );

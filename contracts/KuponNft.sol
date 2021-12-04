@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "base64-sol/base64.sol";
 
 contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
   using Counters for Counters.Counter;
@@ -14,6 +15,8 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
   Counters.Counter private _tokenIdTracker;
   uint256 public maxSupply;
   uint256 public price;
+  string public description;
+  string public image;
 
   // claims are initiated by NFT holders
   mapping (uint256 => address) public claims; // token ID => address that burned the token (the last holder)
@@ -29,10 +32,14 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
   constructor(
     string memory _name, 
     string memory _symbol, 
+    string memory _description, 
+    string memory _image, 
     uint256 _maxSupply,
     uint256 _price,
     address _issuer
   ) ERC721(_name, _symbol) {
+    description = _description;
+    image = _image;
     maxSupply = _maxSupply;
     price = _price;
     transferOwnership(_issuer);
@@ -47,6 +54,23 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
 
   function getCompletedNftLastOwner(uint256 _tokenId) public view returns (address) {
     return completed[_tokenId];
+  }
+
+  function tokenURI(uint256 tokenId) public view override returns (string memory) {
+    return string(
+      abi.encodePacked(
+        "data:application/json;base64,",
+        Base64.encode(
+          bytes(
+            abi.encodePacked(
+              '{"name":"', name(), '", ',
+              '"description": "', description, '", ',
+              '"image": "', image, '"}'
+            )
+          )
+        )
+      )
+    );
   }
 
   function totalMinted() public view returns (uint256) {

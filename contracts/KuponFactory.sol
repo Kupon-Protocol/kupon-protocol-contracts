@@ -39,12 +39,14 @@ contract KuponFactory {
   function createKuponNft(
     string memory _name, 
     string memory _symbol, 
+    string memory _description, 
+    string memory _image, 
     uint256 _maxSupply,
     uint256 _price
   ) public returns (address) {
 
     // create a new ERC-721 contract
-    KuponNft nft = new KuponNft(_name, _symbol, _maxSupply, _price, msg.sender);
+    KuponNft nft = new KuponNft(_name, _symbol, _description, _image, _maxSupply, _price, msg.sender);
 
     // store the address into the NFT addresses array
     nftAddresses.push(address(nft));
