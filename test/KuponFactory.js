@@ -43,6 +43,9 @@ describe("KuponFactory contract", function () {
     const owner = await nftInstance.owner();
     expect(owner).to.equal(issuer.address);
 
+    const length = await factoryContract.getNftAddressesLength();
+    expect(length).to.equal(1);
+
     // check if the NFT address is correctly assigned to the issuer in the issuers mapping
     const nftAddressOfIssuer = await factoryContract.nftOfIssuerByIndex(issuer.address, 0);
     expect(nftAddressOfIssuer).to.equal(nftAddress);

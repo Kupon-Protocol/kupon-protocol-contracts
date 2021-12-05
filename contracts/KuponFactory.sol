@@ -18,6 +18,10 @@ contract KuponFactory {
     return nftAddresses[_index];
   }
 
+  function getNftAddressesLength() public view returns (uint256) {
+    return nftAddresses.length;
+  }
+
   function nftOfIssuerByIndex(address _issuerAddress, uint256 index) public view returns (address) {
     require(index < nftCounter[_issuerAddress], "NFTs by issuer: issuer index out of bounds");
     return issuers[_issuerAddress][index];
