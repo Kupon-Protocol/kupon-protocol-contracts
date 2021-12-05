@@ -5,12 +5,12 @@
 Create a `.env` file with the following keys:
 
 ```bash
-ALCHEMY_API_KEY=enter-key-here
+ALCHEMY_API_KEY_MUMBAI=enter-key-here
+ALCHEMY_API_KEY_ROPSTEN=enter-key-here
 DEPLOYER_PRIVATE_KEY=enter-key-here
 ETHERSCAN_API_KEY=enter-key-here
+POLYGONSCAN_API_KEY=enter-key-here
 ```
-
-> Note that you can use an API key from PolygonScan as the value for ETHERSCAN_API_KEY in case you're deploying to Polygon or Mumbai.
 
 Compile:
 

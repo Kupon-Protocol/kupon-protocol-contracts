@@ -9,6 +9,7 @@ module.exports = {
   defaultNetwork: 'hardhat',
 
   etherscan: {
+    //apiKey: process.env.POLYGONSCAN_API_KEY
     apiKey: process.env.ETHERSCAN_API_KEY
   },
 
@@ -20,8 +21,15 @@ module.exports = {
       gas: "auto", // gas limit
       gasPrice: 2000000000, // 2 gwei
     },
+    ropsten: {
+      url: 'https://eth-ropsten.alchemyapi.io/v2/' + process.env.ALCHEMY_API_KEY_ROPSTEN,
+      chainId: 3,
+      accounts: [process.env.DEPLOYER_PRIVATE_KEY],
+      gas: "auto", // gas limit
+      gasPrice: 2000000000, // 2 gwei
+    },
     mumbai: {
-      url: 'https://polygon-mumbai.g.alchemy.com/v2/' + process.env.ALCHEMY_API_KEY,
+      url: 'https://polygon-mumbai.g.alchemy.com/v2/' + process.env.ALCHEMY_API_KEY_MUMBAI,
       chainId: 80001,
       accounts: [process.env.DEPLOYER_PRIVATE_KEY],
       gas: "auto", // gas limit
