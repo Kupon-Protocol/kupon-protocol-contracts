@@ -18,6 +18,10 @@ contract KuponFactory {
     return nftAddresses[_index];
   }
 
+  function getNftAddressesLength() public view returns (uint256) {
+    return nftAddresses.length;
+  }
+
   function nftOfIssuerByIndex(address _issuerAddress, uint256 index) public view returns (address) {
     require(index < nftCounter[_issuerAddress], "NFTs by issuer: issuer index out of bounds");
     return issuers[_issuerAddress][index];
@@ -39,12 +43,14 @@ contract KuponFactory {
   function createKuponNft(
     string memory _name, 
     string memory _symbol, 
+    string memory _description, 
+    string memory _image, 
     uint256 _maxSupply,
     uint256 _price
   ) public returns (address) {
 
     // create a new ERC-721 contract
-    KuponNft nft = new KuponNft(_name, _symbol, _maxSupply, _price, msg.sender);
+    KuponNft nft = new KuponNft(_name, _symbol, _description, _image, _maxSupply, _price, msg.sender);
 
     // store the address into the NFT addresses array
     nftAddresses.push(address(nft));

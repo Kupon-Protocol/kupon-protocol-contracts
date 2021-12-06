@@ -7,6 +7,8 @@ describe("KuponNft contract", function () {
 
   const nftName = "30-min video chat";
   const nftSymbol = "30MIN";
+  const nftDescription = "This NFT gives you the right to claim a 30 minute video call with the issuer.";
+  const nftImage = "https://i.insider.com/602ee9ced3ad27001837f2ac";
   const nftSupply = 3;
   const nftPriceWei = ethers.utils.parseUnits("0.1", "ether"); // 0.1 ETH or MATIC
 
@@ -18,6 +20,8 @@ describe("KuponNft contract", function () {
     contract = await KuponNft.deploy(
       nftName, // name
       nftSymbol, // symbol
+      nftDescription, // description
+      nftImage, // image URI
       nftSupply, // supply
       nftPriceWei, // price in wei
       issuer.address
@@ -34,6 +38,12 @@ describe("KuponNft contract", function () {
     const symbol = await contract.symbol();
 
     expect(symbol).to.equal(nftSymbol);
+  });
+
+  it("checks the NFT description", async function () {
+    const description = await contract.description();
+
+    expect(description).to.equal(nftDescription);
   });
 
   it("checks the NFT max supply", async function () {
