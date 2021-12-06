@@ -38,7 +38,7 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
     uint256 _price,
     address _issuer
   ) ERC721(_name, _symbol) {
-    require(_maxSupply > 0, "Supply cannot be zero");
+    require(_maxSupply > 0, "Owner cannot deploy zero supply tokens");
     description = _description;
     image = _image;
     maxSupply = _maxSupply;
