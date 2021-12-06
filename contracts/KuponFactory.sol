@@ -18,6 +18,10 @@ contract KuponFactory {
     return nftAddresses[_index];
   }
 
+  function getNftAddressesArray() public view returns (address[] memory) {
+    return nftAddresses;
+  }
+
   function getNftAddressesLength() public view returns (uint256) {
     return nftAddresses.length;
   }

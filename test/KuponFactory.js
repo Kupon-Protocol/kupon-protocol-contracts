@@ -105,6 +105,9 @@ describe("KuponFactory contract", function () {
     const issuerNfts = await factoryContract.getNftsByIssuer(issuer.address);
     expect(issuerNfts).to.have.lengthOf(instances.length);
 
+    // get all NFT addresses
+    const nftAddresses = await factoryContract.getNftAddressesArray();
+    expect(nftAddresses).to.have.lengthOf(instances.length);
   });
 
   it("does not allow a token with no supply", async function () {

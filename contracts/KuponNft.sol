@@ -57,7 +57,7 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
     return completed[_tokenId];
   }
 
-  function tokenURI(uint256 tokenId) public view override returns (string memory) {
+  function tokenURI(uint256) public view override returns (string memory) {
     return string(
       abi.encodePacked(
         "data:application/json;base64,",
