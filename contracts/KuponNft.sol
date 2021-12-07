@@ -20,9 +20,11 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
 
   // claims are initiated by NFT holders
   mapping (uint256 => address) public claims; // token ID => address that burned the token (the last holder)
+  Counters.Counter public claimsCounter;
 
   // completions are made by the NFT issuer (values move from "claims" to "completed" when service is completed)
   mapping (uint256 => address) public completed; // token ID => address that burned the token (the last holder)
+  Counters.Counter public completedCounter;
 
   // EVENTS
   event Claim(address indexed owner, uint256 indexed tokenId); // token owner & token ID
@@ -98,6 +100,8 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
 
     claims[_tokenId] = tokenOwner;
 
+    claimsCounter.increment();
+
     emit Claim(tokenOwner, _tokenId);
   }
 
@@ -113,6 +117,8 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
     // move the last owner address from claims to completed mapping
     claims[_tokenId] = address(0);
     completed[_tokenId] = lastOwner;
+
+    completedCounter.increment();
 
     emit Completed(_tokenId);
   }

@@ -118,6 +118,10 @@ describe("KuponNft contract", function () {
     const minted = await contract.totalMinted();
     expect(minted).to.equal(1);
 
+    // claimsCounter should be 0
+    const claimsCounter1 = await contract.claimsCounter();
+    expect(claimsCounter1).to.equal(0);
+
     // a user that is not the NFT holder cannot claim it
     await expect(contract.connect(notHolder).claim(0)).to.be.revertedWith('ERC721Burnable: caller is not owner nor approved');
     
@@ -127,12 +131,20 @@ describe("KuponNft contract", function () {
     // only holder can make a claim for the service/product
     await expect(contract.connect(holder).claim(0)).to.emit(contract, "Claim").withArgs(holder.address, 0); // token with ID 0
 
+    // claimsCounter should be increased by 1
+    const claimsCounter2 = await contract.claimsCounter();
+    expect(claimsCounter2).to.equal(1);
+
     // check claimed NFT last owner
     const lastOwner = await contract.getClaimedNftLastOwner(0); // token ID 0
     expect(lastOwner).to.equal(holder.address);
 
     const lastOwner2 = await contract.getClaimedNftLastOwner(1); // token ID 1 (hasn't been minted nor claimed yet)
     expect(lastOwner2).to.equal(ethers.constants.AddressZero);
+
+    // completedCounter should be 0
+    const completedCounter1 = await contract.completedCounter();
+    expect(completedCounter1).to.equal(0);
 
     // the nonHolder cannot mark the claim as complete
     await expect(contract.connect(notHolder).markCompleted(0)).to.be.revertedWith("Ownable: caller is not the owner"); // token with ID 0
@@ -148,6 +160,10 @@ describe("KuponNft contract", function () {
     
     // trying to mark a non-existing token (with ID 1) as completed should also fail
     await expect(contract.connect(issuer).markCompleted(1)).to.be.revertedWith("The NFT has either been completed already or has not been minted yet."); // token with ID 1
+
+    // completedCounter should now be increased to 1
+    const completedCounter2 = await contract.completedCounter();
+    expect(completedCounter2).to.equal(1);
 
     // holder mints another token (with ID 1)
     await contract.connect(holder).mint(holder.address, {
