@@ -75,6 +75,8 @@ describe("KuponNft contract", function () {
     const minted2 = await contract.totalMinted();
     expect(minted2).to.equal(2);
 
+    
+
     // mint token 3
     await contract.mint(issuer.address, {
       value: nftPriceWei
@@ -107,6 +109,10 @@ describe("KuponNft contract", function () {
     // contract balance after withdraw
     const ownerBalanceAfter = await ethers.provider.getBalance(issuer.address);
     expect(ownerBalanceBefore).to.be.lt(ownerBalanceAfter); // lt instead of lessThan for BigNumber
+
+    // fetch an array of all NFT structs
+    const allNfts = await contract.fetchAllNfts();
+    expect(allNfts).to.have.lengthOf(3);
   });
 
   it("holder claims a token and issuer marks it complete", async function () {
@@ -118,10 +124,6 @@ describe("KuponNft contract", function () {
     const minted = await contract.totalMinted();
     expect(minted).to.equal(1);
 
-    // claimsCounter should be 0
-    const claimsCounter1 = await contract.claimsCounter();
-    expect(claimsCounter1).to.equal(0);
-
     // a user that is not the NFT holder cannot claim it
     await expect(contract.connect(notHolder).claim(0)).to.be.revertedWith('ERC721Burnable: caller is not owner nor approved');
     
@@ -131,20 +133,15 @@ describe("KuponNft contract", function () {
     // only holder can make a claim for the service/product
     await expect(contract.connect(holder).claim(0)).to.emit(contract, "Claim").withArgs(holder.address, 0); // token with ID 0
 
-    // claimsCounter should be increased by 1
-    const claimsCounter2 = await contract.claimsCounter();
-    expect(claimsCounter2).to.equal(1);
-
     // check claimed NFT last owner
-    const lastOwner = await contract.getClaimedNftLastOwner(0); // token ID 0
-    expect(lastOwner).to.equal(holder.address);
+    const hasBeenClaimed0 = await contract.hasBeenClaimed(0); // token ID 0
+    expect(hasBeenClaimed0).to.equal(true);
 
-    const lastOwner2 = await contract.getClaimedNftLastOwner(1); // token ID 1 (hasn't been minted nor claimed yet)
-    expect(lastOwner2).to.equal(ethers.constants.AddressZero);
+    const hasBeenClaimed1 = await contract.hasBeenClaimed(1); // token ID 1 (hasn't been minted nor claimed yet)
+    expect(hasBeenClaimed1).to.equal(false);
 
-    // completedCounter should be 0
-    const completedCounter1 = await contract.completedCounter();
-    expect(completedCounter1).to.equal(0);
+    const hasBeenCompletedBefore = await contract.hasBeenCompleted(0); // token ID 0
+    expect(hasBeenCompletedBefore).to.equal(false);
 
     // the nonHolder cannot mark the claim as complete
     await expect(contract.connect(notHolder).markCompleted(0)).to.be.revertedWith("Ownable: caller is not the owner"); // token with ID 0
@@ -161,9 +158,8 @@ describe("KuponNft contract", function () {
     // trying to mark a non-existing token (with ID 1) as completed should also fail
     await expect(contract.connect(issuer).markCompleted(1)).to.be.revertedWith("The NFT has either been completed already or has not been minted yet."); // token with ID 1
 
-    // completedCounter should now be increased to 1
-    const completedCounter2 = await contract.completedCounter();
-    expect(completedCounter2).to.equal(1);
+    const hasBeenCompletedAfter = await contract.hasBeenCompleted(0); // token ID 0
+    expect(hasBeenCompletedAfter).to.equal(true);
 
     // holder mints another token (with ID 1)
     await contract.connect(holder).mint(holder.address, {
@@ -172,15 +168,6 @@ describe("KuponNft contract", function () {
 
     // trying to mark an existing token (with ID 1) that has not been claimed yet as completed should fail
     await expect(contract.connect(issuer).markCompleted(1)).to.be.revertedWith("The NFT has not been claimed/burned yet."); // token with ID 1
-
-    // token ID 0 has been marked completed, so the CLAIMS address should be 0x0 now
-    const lastOwner3 = await contract.getClaimedNftLastOwner(0);
-    expect(lastOwner3).to.equal(ethers.constants.AddressZero);
-
-    // token ID 0 has been marked completed, so the COMPLETED address should be the last holder's address now
-    const lastOwner4 = await contract.getCompletedNftLastOwner(0);
-    expect(lastOwner4).to.equal(holder.address);
-
   });
 
 });

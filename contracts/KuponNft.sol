@@ -18,13 +18,23 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
   string public description;
   string public image;
 
-  // claims are initiated by NFT holders
-  mapping (uint256 => address) public claims; // token ID => address that burned the token (the last holder)
-  Counters.Counter public claimsCounter;
+  enum NftStatus {
+    Minted,
+    Claimed,
+    Completed
+  }
 
-  // completions are made by the NFT issuer (values move from "claims" to "completed" when service is completed)
-  mapping (uint256 => address) public completed; // token ID => address that burned the token (the last holder)
-  Counters.Counter public completedCounter;
+  struct SingleNftData {
+    uint256 tokenId;
+    NftStatus status; // minted, claimed, completed
+    address lastHolder; // only write for claimed and completed
+    // bool disputed;
+    // bool paymentUnlocked;
+    // uint256 expirationDate; // if it's not set on the contract level
+  }
+
+  // mapping (uint256 => SingleNftData) public allNfts; // tokenId => SingleNftData
+  SingleNftData[] public allNfts;
 
   // EVENTS
   event Claim(address indexed owner, uint256 indexed tokenId); // token owner & token ID
@@ -49,14 +59,32 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
   }
 
   // READ METHODS
-
-  // get the last owner of a claimed NFT
-  function getClaimedNftLastOwner(uint256 _tokenId) public view returns (address) {
-    return claims[_tokenId];
+  function fetchAllNfts() public view returns (SingleNftData[] memory) {
+    return allNfts;
   }
 
-  function getCompletedNftLastOwner(uint256 _tokenId) public view returns (address) {
-    return completed[_tokenId];
+  function hasBeenClaimed(uint256 _tokenId) public view returns (bool) {
+    if (_tokenId >= totalMinted()) {
+      return false;
+    }
+
+    if (allNfts[_tokenId].status == NftStatus.Claimed) {
+      return true;
+    }
+
+    return false;
+  }
+
+  function hasBeenCompleted(uint256 _tokenId) public view returns (bool) {
+    if (_tokenId >= totalMinted()) {
+      return false;
+    }
+
+    if (allNfts[_tokenId].status == NftStatus.Completed) {
+      return true;
+    }
+
+    return false;
   }
 
   function tokenURI(uint256) public view override returns (string memory) {
@@ -88,6 +116,13 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
     require(idTracker < maxSupply, "Mint limit");
     require(msg.value >= price, "Value below price");
 
+    SingleNftData memory newNft;
+
+    newNft.tokenId = idTracker;
+    newNft.status = NftStatus.Minted;
+
+    allNfts.push(newNft);
+
     _tokenIdTracker.increment();
     _safeMint(_to, idTracker);
   }
@@ -98,9 +133,8 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
 
     burn(_tokenId); // this function checks if msg.sender has rights to burn this token
 
-    claims[_tokenId] = tokenOwner;
-
-    claimsCounter.increment();
+    allNfts[_tokenId].status = NftStatus.Claimed;
+    allNfts[_tokenId].lastHolder = tokenOwner;
 
     emit Claim(tokenOwner, _tokenId);
   }
@@ -110,15 +144,9 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
   // After the service/product has been provided, issuer can mark the claim as completed
   function markCompleted(uint256 _tokenId) public onlyOwner {
     require(!_exists(_tokenId), "The NFT has not been claimed/burned yet.");
-    require(getClaimedNftLastOwner(_tokenId) != address(0), "The NFT has either been completed already or has not been minted yet.");
+    require(hasBeenClaimed(_tokenId) == true, "The NFT has either been completed already or has not been minted yet.");
 
-    address lastOwner = getClaimedNftLastOwner(_tokenId);
-
-    // move the last owner address from claims to completed mapping
-    claims[_tokenId] = address(0);
-    completed[_tokenId] = lastOwner;
-
-    completedCounter.increment();
+    allNfts[_tokenId].status = NftStatus.Completed;
 
     emit Completed(_tokenId);
   }
