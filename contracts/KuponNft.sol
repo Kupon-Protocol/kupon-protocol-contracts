@@ -63,6 +63,18 @@ contract KuponNft is ERC721, Ownable, ERC721Enumerable, ERC721Burnable {
     return allNfts;
   }
 
+  function fetchNftsByHolder(address _holder) external view returns (uint256[] memory) {
+    uint256 nftCount = balanceOf(_holder);
+
+    uint256[] memory nftIds = new uint256[](nftCount);
+
+    for (uint256 i = 0; i < nftCount; i++) {
+      nftIds[i] = tokenOfOwnerByIndex(_holder, i);
+    }
+
+    return nftIds;
+  }
+
   function hasBeenClaimed(uint256 _tokenId) public view returns (bool) {
     if (_tokenId >= totalMinted()) {
       return false;

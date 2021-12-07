@@ -75,8 +75,6 @@ describe("KuponNft contract", function () {
     const minted2 = await contract.totalMinted();
     expect(minted2).to.equal(2);
 
-    
-
     // mint token 3
     await contract.mint(issuer.address, {
       value: nftPriceWei
@@ -90,8 +88,12 @@ describe("KuponNft contract", function () {
       value: nftPriceWei
     })).to.be.revertedWith('Mint limit');
 
-    const totalSupply = await contract.totalSupply();
+    const totalSupply = await contract.totalMinted();
     expect(totalSupply).to.equal(minted3);
+
+    // fetch NFT IDs by a specific holder
+    const holderNftIds = await contract.fetchNftsByHolder(issuer.address);
+    expect(holderNftIds).to.have.lengthOf(3);
 
     // owner balance before withdraw
     const ownerBalanceBefore = await ethers.provider.getBalance(issuer.address);
