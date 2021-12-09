@@ -1,6 +1,8 @@
 # Kupon Protocol contracts
 
-## Quickstart
+See instructions below to run the code on localhost and for blockchain deployment.
+
+### .env
 
 Create a `.env` file with the following keys:
 
@@ -12,32 +14,56 @@ ETHERSCAN_API_KEY=enter-key-here
 POLYGONSCAN_API_KEY=enter-key-here
 ```
 
-Compile:
+### Compile
 
 ```bash
 npx hardhat compile
 ```
 
-Test:
+### Test
 
 ```bash
 npx hardhat test
 ```
 
-Run on localhost:
+### Run on localhost
+
+Start a localhost node:
 
 ```bash
 npx hardhat node
+```
+
+Make sure to add one of the private keys presented as deployer key in `.env` file.
+
+In a separate terminal tab then run the following command:
+
+```bash
 npx hardhat run scripts/deploy.js --network localhost
 ```
 
-Deploy to Mumbai testnet
+If you also want to run frontend on localhost, make sure to download and run the 
+[frontend Vue app](https://github.com/Kupon-Protocol/frontend) 
+and also change the localhost contract address in `src/hooks/useKuponFactory.js`.
+
+### Deploy to Mumbai testnet
 
 ```bash
 npx hardhat run scripts/deploy.js --network mumbai
 ```
 
-Verify contract on Etherscan/Polygonscan:
+### Verify contract on Etherscan/Polygonscan:
+
+First make sure to have the correct key uncommented (Polygonscan for Mumbai or Etherscan for Ropsten):
+
+```bash
+etherscan: {
+  apiKey: process.env.POLYGONSCAN_API_KEY
+  //apiKey: process.env.ETHERSCAN_API_KEY
+},
+```
+
+Then run this command:
 
 ```bash
 npx hardhat verify --network mumbai <contract-address>
